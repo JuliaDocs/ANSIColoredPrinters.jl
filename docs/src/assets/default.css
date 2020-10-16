@@ -23,8 +23,20 @@ html span.sgr4 {
     text-decoration: underline;
 }
 
-html span.sgr8 {
-    display: none;
+html span.sgr7 {
+    color: #fff;
+    background-color: #222;
+}
+
+html.theme--documenter-dark span.sgr7 {
+    color: #1f2424;
+    background-color: #fff;
+}
+
+html span.sgr8,
+html span.sgr8 span,
+html span span.sgr8 {
+    color: transparent;
 }
 
 html span.sgr9 {
