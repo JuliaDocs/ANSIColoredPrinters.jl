@@ -18,6 +18,7 @@ buf = IOBuffer()
 print(buf, "\e[0m", "Normal ")
 print(buf, "\e[3m", "Italic ")
 print(buf, "\e[1m", "Bold-Italic ") # this keeps the "italic"
+print(buf, "\e[23m", "Bold ")  # this keeps the "bold"
 print(buf, "\e[0m", "Normal ")
 HTMLPrinter(buf, root_class="documenter-example-output")
 ```
@@ -26,8 +27,8 @@ HTMLPrinter(buf, root_class="documenter-example-output")
 ```@example ex
 buf = IOBuffer()
 print(buf, "\e[0m", "Normal ")
-print(buf, "\e[4m", " Underline ", "\e[m", " ")
-print(buf, "\e[9m", " Striethrough ", "\e[m", " ")
+print(buf, "\e[4m", " Underline ", "\e[24m", " ")
+print(buf, "\e[9m", " Striethrough ", "\e[29m", " ")
 print(buf, "\e[4;9m", " Both ", "\e[m")
 HTMLPrinter(buf, root_class="documenter-example-output")
 ```
@@ -40,7 +41,7 @@ switched manually, or convert the style afterwards using JavaScript etc.
 buf = IOBuffer()
 print(buf, "\e[0m", "Normal ")
 print(buf, "\e[7m", "Invert ")
-print(buf, "\e[0m", "Normal ")
+print(buf, "\e[27m", "Normal ")
 print(buf, "\e[7;100m", "GrayText? ") # not supported by default.css
 print(buf, "\e[34m", "BlueBG? ") # not supported by default.css
 print(buf, "\e[0m", "Normal ")
@@ -52,10 +53,11 @@ HTMLPrinter(buf, root_class="documenter-example-output")
 buf = IOBuffer()
 print(buf, "\e[0m", "Normal ")
 print(buf, "\e[8m", "Conceal ")
-print(buf, "\e[31;47m", "red ") # this is still concealed
+print(buf, "\e[31;47m", "Red1 ") # this is still concealed
 print(buf, "\e[0m", "Normal ")
-print(buf, "\e[31;47m", "red ")
+print(buf, "\e[31;47m", "Red2 ")
 print(buf, "\e[8m", "Conceal ")
+print(buf, "\e[28m", "Red3 ")
 print(buf, "\e[0m", "Normal ")
 HTMLPrinter(buf, root_class="documenter-example-output")
 ```
