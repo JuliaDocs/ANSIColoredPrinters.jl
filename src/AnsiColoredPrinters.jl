@@ -62,7 +62,7 @@ function show_body(io::IO, printer::AbstractPrinter)
         astr = String(take!(ansiesc))
         m = nothing
         if c === UInt8('m')
-            while !isempty(astr)
+            while true
                 if (m = match(r"^0?(?:;|$)", astr)) !== nothing
                     reset(ctx)
                 elseif (m = match(r"^22;?", astr)) !== nothing
@@ -89,10 +89,13 @@ function show_body(io::IO, printer::AbstractPrinter)
                     else
                         ctx.d1[di] = true
                     end
-                else # unsupported
+                elseif (m = match(r"^(\d+);?", astr)) !== nothing
+                    # unsupported
+                else # unknown
                     break
                 end
                 astr = astr[m.offset + lastindex(m.match):end]
+                isempty(astr) && break
             end
         end
     end
@@ -107,6 +110,7 @@ function apply_changes(io::IO, printer::HTMLPrinter)
     stack = printer.stack
     ctx = printer.ctx
     prevctx = printer.prevctx
+    invert = prevctx.d1[7] != ctx.d1[7]
 
     marks = zeros(Bool, length(stack))
     nstack = String[]
@@ -118,12 +122,12 @@ function apply_changes(io::IO, printer::HTMLPrinter)
             ctx.d1[di] && push!(nstack, class)
         end
     end
-    if prevctx.fg != ctx.fg || prevctx.fghex != ctx.fghex
+    if prevctx.fg != ctx.fg || prevctx.fghex != ctx.fghex || invert
         prevctx.fg, prevctx.fghex = ctx.fg, ctx.fghex
         marks .|= map(c -> occursin(r"^sgr(?:3[0-7]|9[0-7]|38_[25])$", c), stack)
         isempty(ctx.fg) || push!(nstack, ctx.fg)
     end
-    if prevctx.bg != ctx.bg || prevctx.bghex != ctx.bghex
+    if prevctx.bg != ctx.bg || prevctx.bghex != ctx.bghex || invert
         prevctx.bg, prevctx.bghex = ctx.bg, ctx.bghex
         marks .|= map(c -> occursin(r"^sgr(?:4[0-7]|10[0-7]|48_[25])$", c), stack)
         isempty(ctx.bg) || push!(nstack, ctx.bg)

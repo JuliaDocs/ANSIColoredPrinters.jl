@@ -7,17 +7,56 @@ using AnsiColoredPrinters
 buf = IOBuffer()
 print(buf, "\e[0m", "Normal ")
 print(buf, "\e[1m", "Bold ")
-print(buf, "\e[2m", "Faint ")
+print(buf, "\e[2m", "Faint ") # this unsets the "bold"
 print(buf, "\e[0m", "Normal ")
 HTMLPrinter(buf, root_class="documenter-example-output")
 ```
+
+## Italic
+```@example ex
+buf = IOBuffer()
+print(buf, "\e[0m", "Normal ")
+print(buf, "\e[3m", "Italic ")
+print(buf, "\e[1m", "Bold-Italic ") # this keeps the "italic"
+print(buf, "\e[0m", "Normal ")
+HTMLPrinter(buf, root_class="documenter-example-output")
+```
+
 ## Underline and Strikethrough
 ```@example ex
 buf = IOBuffer()
 print(buf, "\e[0m", "Normal ")
-print(buf, "\e[4m", " Underline ", "\e[0m", " ")
-print(buf, "\e[9m", " Striethrough ", "\e[0m", " ")
-print(buf, "\e[4;9m", " Both ")
+print(buf, "\e[4m", " Underline ", "\e[m", " ")
+print(buf, "\e[9m", " Striethrough ", "\e[m", " ")
+print(buf, "\e[4;9m", " Both ", "\e[m")
+HTMLPrinter(buf, root_class="documenter-example-output")
+```
+## Invert
+The invert code swaps the foreground and background colors. However, the support
+is limited. You will need to force the foreground and background colors to be
+switched manually, or convert the style afterwards using JavaScript etc.
+
+```@example ex
+buf = IOBuffer()
+print(buf, "\e[0m", "Normal ")
+print(buf, "\e[7m", "Invert ")
+print(buf, "\e[0m", "Normal ")
+print(buf, "\e[7;100m", "GrayText? ") # not supported by default.css
+print(buf, "\e[34m", "BlueBG? ") # not supported by default.css
+print(buf, "\e[0m", "Normal ")
+HTMLPrinter(buf, root_class="documenter-example-output")
+```
+
+## Conceal
+```@example ex
+buf = IOBuffer()
+print(buf, "\e[0m", "Normal ")
+print(buf, "\e[8m", "Conceal ")
+print(buf, "\e[31;47m", "red ") # this is still concealed
+print(buf, "\e[0m", "Normal ")
+print(buf, "\e[31;47m", "red ")
+print(buf, "\e[8m", "Conceal ")
+print(buf, "\e[0m", "Normal ")
 HTMLPrinter(buf, root_class="documenter-example-output")
 ```
 
@@ -74,6 +113,7 @@ for color in 232:255 # grayscale in 24 steps
     print(buf, "\e[38;5;$color;48;5;$(color)m  ")
     print(buf, "\e[49m", lpad(color, 3), " ")
 end
+print(buf, "\e[m")
 HTMLPrinter(buf, root_class="documenter-example-output")
 ```
 ## 24-bit colors
