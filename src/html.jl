@@ -39,12 +39,12 @@ end
 function start_new_state(io::IO, printer::HTMLPrinter)
     class = printer.stack[end]
     ctx = printer.ctx
-    if occursin(r"^sgr38_[25]$", class)
-        write(io, "<span class=\"", class, "\" style=\"color:#", ctx.fghex, "\">")
-    elseif occursin(r"^sgr48_[25]$", class)
-        write(io, "<span class=\"", class, "\" style=\"background:#", ctx.bghex, "\">")
+    if occursin(r"^38_[25]$", class)
+        write(io, "<span class=\"sgr", class, "\" style=\"color:#", ctx.fg.hex, "\">")
+    elseif occursin(r"^48_[25]$", class)
+        write(io, "<span class=\"sgr", class, "\" style=\"background:#", ctx.bg.hex, "\">")
     else
-        write(io, "<span class=\"", class, "\">")
+        write(io, "<span class=\"sgr", class, "\">")
     end
 end
 
