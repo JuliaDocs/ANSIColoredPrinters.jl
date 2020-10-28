@@ -4,13 +4,17 @@ import Base: show, showable
 
 export HTMLPrinter
 
+struct SGRColor
+    class::String
+    hex::String
+    SGRColor(class::AbstractString="", hex::AbstractString="") = new(class, hex)
+end
+
 mutable struct SGRContext
-    fg::String
-    fghex::String
-    bg::String
-    bghex::String
+    fg::SGRColor
+    bg::SGRColor
     flags::BitVector
-    SGRContext() = new("", "", "", "", falses(128))
+    SGRContext() = new(SGRColor(), SGRColor(), falses(128))
 end
 
 abstract type AbstractPrinter end
@@ -19,8 +23,8 @@ include("colors.jl")
 include("html.jl")
 
 function reset_color(ctx::SGRContext)
-    ctx.fg, ctx.fghex = "", ""
-    ctx.bg, ctx.bghex = "", ""
+    ctx.fg = SGRColor()
+    ctx.bg = SGRColor()
 end
 
 function reset(ctx::SGRContext)
@@ -37,16 +41,26 @@ function reset(printer::AbstractPrinter)
     reset(printer.prevctx)
 end
 
+function copy!(dest::SGRContext, src::SGRContext)
+    dest.fg = src.fg
+    dest.bg = src.bg
+    dest.flags .= src.flags
+end
+
 escape_char(printer::AbstractPrinter, c::UInt8) = nothing
 
 function show_body(io::IO, printer::AbstractPrinter)
     reset(printer)
     buf = printer.buf
-
+    ctx_changed = false
     while !eof(buf)
         c = read(buf, UInt8)
         if c !== UInt8('\e')
-            apply_changes(io, printer)
+            if ctx_changed
+                apply_changes(io, printer)
+                copy!(printer.prevctx, printer.ctx)
+                ctx_changed = false
+            end
             ec = escape_char(printer, c)
             write(io, ec === nothing ? c : ec)
             continue
@@ -70,6 +84,7 @@ function show_body(io::IO, printer::AbstractPrinter)
                 isempty(astr) && break
             end
         end
+        ctx_changed = printer.prevctx != printer.ctx
     end
 
     while !isempty(printer.stack) # force closing
@@ -89,9 +104,9 @@ function parse_sgrcodes(ctx::SGRContext, astr::AbstractString)
         ctx.flags[di] = false
         ctx.flags[di + (di === 5)] = false
     elseif (m = match(r"^39;?", astr)) !== nothing
-        ctx.fg = ""
+        ctx.fg = SGRColor()
     elseif (m = match(r"^49;?", astr)) !== nothing
-        ctx.bg = ""
+        ctx.bg = SGRColor()
     elseif (m = match(r"^([349][0-7]|10[0-7]);?", astr)) !== nothing
         set_16colors!(ctx, m.captures[1])
     elseif (m = match(r"^([345]8);5;(\d{0,3});?", astr)) !== nothing
@@ -128,21 +143,18 @@ function apply_changes(io::IO, printer::HTMLPrinter)
 
     for di = 1:9
         if prevctx.flags[di] != ctx.flags[di]
-            class = "sgr$di"
+            class = string(di)
             marks .|= map(c -> c == class, stack)
             ctx.flags[di] && push!(nstack, class)
         end
     end
-    prevctx.flags .= ctx.flags
-    if prevctx.fg != ctx.fg || prevctx.fghex != ctx.fghex || invert
-        prevctx.fg, prevctx.fghex = ctx.fg, ctx.fghex
-        marks .|= map(c -> occursin(r"^sgr(?:3[0-7]|9[0-7]|38_[25])$", c), stack)
-        isempty(ctx.fg) || push!(nstack, ctx.fg)
+    if prevctx.fg != ctx.fg || invert
+        marks .|= map(c -> occursin(r"^(?:3[0-7]|9[0-7]|38_[25])$", c), stack)
+        isnormal(ctx.fg) || push!(nstack, ctx.fg.class)
     end
-    if prevctx.bg != ctx.bg || prevctx.bghex != ctx.bghex || invert
-        prevctx.bg, prevctx.bghex = ctx.bg, ctx.bghex
-        marks .|= map(c -> occursin(r"^sgr(?:4[0-7]|10[0-7]|48_[25])$", c), stack)
-        isempty(ctx.bg) || push!(nstack, ctx.bg)
+    if prevctx.bg != ctx.bg || invert
+        marks .|= map(c -> occursin(r"^(?:4[0-7]|10[0-7]|48_[25])$", c), stack)
+        isnormal(ctx.bg) || push!(nstack, ctx.bg.class)
     end
     poplevel = findfirst(marks)
     if poplevel !== nothing
