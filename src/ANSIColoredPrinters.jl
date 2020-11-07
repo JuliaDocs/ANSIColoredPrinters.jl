@@ -1,4 +1,4 @@
-module AnsiColoredPrinters
+module ANSIColoredPrinters
 
 import Base: show, showable
 

@@ -1,11 +1,11 @@
-using Documenter, AnsiColoredPrinters
+using Documenter, ANSIColoredPrinters
 
 makedocs(
     clean = false,
-    modules=[AnsiColoredPrinters],
+    modules=[ANSIColoredPrinters],
     format=Documenter.HTML(prettyurls = get(ENV, "CI", nothing) == "true",
                            assets = ["assets/default.css"]),
-    sitename="AnsiColoredPrinters",
+    sitename="ANSIColoredPrinters",
     pages=[
         "Introduction" => "index.md",
         "Supported Codes" => "supported-codes.md",
@@ -14,7 +14,7 @@ makedocs(
 )
 
 deploydocs(
-    repo="github.com/kimikage/AnsiColoredPrinters.jl.git",
+    repo="github.com/kimikage/ANSIColoredPrinters.jl.git",
     devbranch = "main",
     push_preview = true
 )

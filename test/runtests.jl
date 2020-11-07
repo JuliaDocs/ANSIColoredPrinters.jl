@@ -1,4 +1,4 @@
-using Test, AnsiColoredPrinters
+using Test, ANSIColoredPrinters
 
 @testset "colors" begin
     include("colors.jl")
