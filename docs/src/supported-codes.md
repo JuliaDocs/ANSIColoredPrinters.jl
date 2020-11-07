@@ -1,6 +1,6 @@
 # Supported Codes
 ```@setup ex
-using AnsiColoredPrinters
+using ANSIColoredPrinters
 ```
 ## Bold and Faint
 ```@example ex

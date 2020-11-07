@@ -1,6 +1,6 @@
-# AnsiColoredPrinters
+# ANSIColoredPrinters
 
-AnsiColoredPrinters converts a UTF-8 text qualified by
+ANSIColoredPrinters converts a UTF-8 text qualified by
 [ANSI escape codes](https://en.wikipedia.org/wiki/ANSI_escape_code) to another
 format. Currently, only conversion to an HTML ([`HTMLPrinter`](@ref)) is
 implemented.
@@ -9,11 +9,11 @@ implemented.
 The package can be installed with the Julia package manager. Run:
 ```julia
 import Pkg
-Pkg.add("AnsiColoredPrinters")
+Pkg.add("ANSIColoredPrinters")
 ```
 or, from the Julia REPL, type `]` to enter the Pkg REPL mode and run:
 ```julia
-pkg> add AnsiColoredPrinters
+pkg> add ANSIColoredPrinters
 ```
 
 ## Usage
@@ -25,7 +25,7 @@ this Documenter's HTML output), the text is displayed as HTML with its ANSI
 escape codes are translated into HTML elements.
 
 ```@example ex
-using AnsiColoredPrinters
+using ANSIColoredPrinters
 using Crayons
 
 buf = IOBuffer()

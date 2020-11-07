@@ -1,4 +1,4 @@
-using Test, AnsiColoredPrinters
+using Test, ANSIColoredPrinters
 
 @testset "plain" begin
     buf = IOBuffer()
