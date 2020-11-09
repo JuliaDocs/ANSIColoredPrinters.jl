@@ -1,8 +1,25 @@
 module ANSIColoredPrinters
 
-import Base: show, showable
+import Base: ==, show, showable
 
-export HTMLPrinter
+export PlainTextPrinter, HTMLPrinter
+
+abstract type AbstractPrinter end
+
+"""
+    StackModelPrinter
+
+An abstract printer type for stack-based or tree model formats.
+"""
+abstract type StackModelPrinter <: AbstractPrinter end
+
+"""
+    FlatModelPrinter
+
+An abstract printer type for non-stack-based formats.
+"""
+abstract type FlatModelPrinter <: AbstractPrinter end
+
 
 struct SGRColor
     class::String
@@ -17,10 +34,13 @@ mutable struct SGRContext
     SGRContext() = new(SGRColor(), SGRColor(), falses(128))
 end
 
-abstract type AbstractPrinter end
-
 include("colors.jl")
+include("plain.jl")
 include("html.jl")
+
+==(a::SGRContext, b::SGRContext) = a.fg == b.fg && a.bg == b.bg && a.flags == b.flags
+
+isnormal(ctx::SGRContext) = isnormal(ctx.fg) && isnormal(ctx.bg) && !any(ctx.flags)
 
 function reset_color(ctx::SGRContext)
     ctx.fg = SGRColor()
@@ -34,8 +54,10 @@ end
 
 function reset(printer::AbstractPrinter)
     seekstart(printer.buf)
-    while !isempty(printer.stack)
-        pop!(printer.stack)
+    if printer isa StackModelPrinter
+        while !isempty(printer.stack)
+            pop!(printer.stack)
+        end
     end
     reset(printer.ctx)
     reset(printer.prevctx)
@@ -86,10 +108,7 @@ function show_body(io::IO, printer::AbstractPrinter)
         ctx_changed = printer.prevctx != printer.ctx
     end
 
-    while !isempty(printer.stack) # force closing
-        end_current_state(io, printer)
-        pop!(printer.stack)
-    end
+    finalize(io, printer)
 end
 
 function parse_sgrcodes(ctx::SGRContext, astr::AbstractString)
@@ -131,7 +150,7 @@ function parse_sgrcodes(ctx::SGRContext, astr::AbstractString)
     return astr[m.offset + lastindex(m.match):end]
 end
 
-function apply_changes(io::IO, printer::HTMLPrinter)
+function apply_changes(io::IO, printer::StackModelPrinter)
     stack = printer.stack
     ctx = printer.ctx
     prevctx = printer.prevctx
@@ -169,6 +188,59 @@ function apply_changes(io::IO, printer::HTMLPrinter)
         start_new_state(io, printer)
     end
 end
+
+function apply_changes(io::IO, printer::FlatModelPrinter)
+    ansicodes = Int[]
+
+    prevctx = printer.prevctx
+    ctx = printer.ctx
+    prevflags = prevctx.flags
+    flags = ctx.flags
+
+    prevctx == ctx && return
+
+    if isnormal(ctx)
+        change_state(io, printer, ansicodes)
+        return
+    end
+    if prevflags[1] & !flags[1] || prevflags[2] & !flags[2]
+        if !flags[1] && !flags[2]
+            push!(ansicodes, 22)
+            parse_sgrcodes(prevctx, "22")
+        end
+    end
+    if prevflags[5] & !flags[5] || prevflags[6] & !flags[6]
+        if !flags[5] && !flags[6]
+            push!(ansicodes, 25)
+            parse_sgrcodes(prevctx, "25")
+        end
+    end
+    prevctx.fg != ctx.fg && append!(ansicodes, isnormal(ctx.fg) ? (39,) : codes(ctx.fg))
+    prevctx.bg != ctx.bg && append!(ansicodes, isnormal(ctx.bg) ? (49,) : codes(ctx.bg))
+    for i in 1:length(flags)
+        prevflags[i] === flags[i] && continue
+        if 1 <= i <= 2 || 5 <= i <= 6
+            flags[i] && push!(ansicodes, i)
+        elseif i <= 9
+            push!(ansicodes, flags[i] ? i : i + 20)
+        end
+    end
+
+    isempty(ansicodes) || change_state(io, printer, ansicodes)
+end
+
+function finalize(io::IO, printer::StackModelPrinter)
+    while !isempty(printer.stack) # force closing
+        end_current_state(io, printer)
+        pop!(printer.stack)
+    end
+end
+
+function finalize(io::IO, printer::FlatModelPrinter)
+    reset(printer.ctx)
+    printer.prevctx != printer.ctx && apply_changes(io, printer)
+end
+
 
 function Base.show(io::IO, ::MIME"text/plain", printer::AbstractPrinter)
     reset(printer)
