@@ -47,15 +47,15 @@ function copy!(dest::SGRContext, src::SGRContext)
     dest.flags .= src.flags
 end
 
-escape_char(printer::AbstractPrinter, c::UInt8) = nothing
+escape_char(printer::AbstractPrinter, c::Char) = nothing
 
 function show_body(io::IO, printer::AbstractPrinter)
     reset(printer)
     buf = printer.buf
     ctx_changed = false
     while !eof(buf)
-        c = read(buf, UInt8)
-        if c !== UInt8('\e')
+        c = read(buf, Char)
+        if c !== '\e'
             if ctx_changed
                 apply_changes(io, printer)
                 copy!(printer.prevctx, printer.ctx)
@@ -66,19 +66,18 @@ function show_body(io::IO, printer::AbstractPrinter)
             continue
         end
         ansiesc = IOBuffer()
-        c = read(buf, UInt8)
-        c === UInt8('[') || continue
+        c = read(buf, Char)
+        c === '[' || continue
         while !eof(buf)
-            c = read(buf, UInt8)
-            if UInt8('0') <= c <= UInt8('9') || c == UInt8(';') # strip spaces
+            c = read(buf, Char)
+            if '0' <= c <= '9' || c === ';' # strip spaces
                 write(ansiesc, c)
-            elseif c >= 0x40
+            elseif c >= Char(0x40)
                 break
             end
         end
         astr = String(take!(ansiesc))
-        m = nothing
-        if c === UInt8('m')
+        if c === 'm'
             while true
                 astr = parse_sgrcodes(printer.ctx, astr)
                 isempty(astr) && break

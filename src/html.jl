@@ -16,15 +16,15 @@ end
 
 Base.showable(::MIME"text/html", printer::HTMLPrinter) = isreadable(printer.buf)
 
-const HTML_ESC_CHARS = Dict{UInt8, String}(
-    UInt8('\'') => "&apos;",
-    UInt8('\"') => "&quot;",
-    UInt8('<') => "&lt;",
-    UInt8('>') => "&gt;",
-    UInt8('&') => "&amp;",
+const HTML_ESC_CHARS = Dict{Char, String}(
+    '\'' => "&#39;",
+    '\"' => "&quot;",
+    '<' => "&lt;",
+    '>' => "&gt;",
+    '&' => "&amp;",
 )
 
-escape_char(::HTMLPrinter, c::UInt8) = get(HTML_ESC_CHARS, c, nothing)
+escape_char(::HTMLPrinter, c::Char) = get(HTML_ESC_CHARS, c, nothing)
 
 function Base.show(io::IO, ::MIME"text/html", printer::HTMLPrinter)
     if isempty(printer.root_class)
