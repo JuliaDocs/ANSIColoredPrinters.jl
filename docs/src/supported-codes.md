@@ -1,4 +1,10 @@
 # Supported Codes
+
+The following are examples of the ANSI escape codes which are supported (i.e.
+interpreted as a valid input) by [`HTMLPrinter`](@ref). Note that the
+representation depends on the renderer, since some codes are not widely
+supported and there are some code conflicts.
+
 ```@setup ex
 using ANSIColoredPrinters
 ```
@@ -18,7 +24,7 @@ buf = IOBuffer()
 print(buf, "\e[0m", "Normal ")
 print(buf, "\e[3m", "Italic ")
 print(buf, "\e[1m", "Bold-Italic ") # this keeps the "italic"
-print(buf, "\e[23m", "Bold ")  # this keeps the "bold"
+print(buf, "\e[23m", "Bold ") # this keeps the "bold"
 print(buf, "\e[0m", "Normal ")
 HTMLPrinter(buf, root_class="documenter-example-output")
 ```

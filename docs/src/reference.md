@@ -1,5 +1,6 @@
 # Reference
 
 ```@docs
+PlainTextPrinter
 HTMLPrinter
 ```

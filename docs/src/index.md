@@ -1,9 +1,9 @@
 # ANSIColoredPrinters
 
-ANSIColoredPrinters converts a UTF-8 text qualified by
+ANSIColoredPrinters converts a text qualified by
 [ANSI escape codes](https://en.wikipedia.org/wiki/ANSI_escape_code) to another
-format. Currently, only conversion to an HTML ([`HTMLPrinter`](@ref)) is
-implemented.
+format. Currently, [plain text](@ref plain_text) and [HTML](@ref html) output
+are supported.
 
 ## Installation
 The package can be installed with the Julia package manager. Run:
@@ -18,11 +18,13 @@ pkg> add ANSIColoredPrinters
 
 ## Usage
 
-All you need to do is to pass an `IO` object containing a UTF-8 text qualified
-by ANSI escape codes as the first argument of the constructor of
-[`HTMLPrinter`](@ref). On environments which support `"text/html"` display (e.g.
-this Documenter's HTML output), the text is displayed as HTML with its ANSI
-escape codes are translated into HTML elements.
+All you need to do is to pass an `IO` object, which contains a text qualified
+with ANSI escape codes as the first argument of the constructor of a printer
+(e.g. [`HTMLPrinter`](@ref)).
+
+On environments which support `MIME"text/html"` display (e.g. this Documenter's
+HTML output), the text is displayed as HTML with its ANSI escape codes are
+translated into HTML elements by [`HTMLPrinter`](@ref).
 
 ```@example ex
 using ANSIColoredPrinters

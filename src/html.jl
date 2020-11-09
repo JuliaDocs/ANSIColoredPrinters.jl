@@ -1,9 +1,5 @@
-"""
-    HTMLPrinter(buf::IO; root_class="")
 
-
-"""
-struct HTMLPrinter <: AbstractPrinter
+struct HTMLPrinter <: StackModelPrinter
     buf::IO
     stack::Vector{String}
     prevctx::SGRContext
@@ -13,6 +9,17 @@ struct HTMLPrinter <: AbstractPrinter
         new(buf, String[], SGRContext(), SGRContext(), String(root_class))
     end
 end
+
+"""
+    HTMLPrinter(buf::IO; root_class="")
+
+Creates a printer for `MIME"text/html"` output.
+
+# Arguments
+- `buf`: A source `IO` object containing a text with ANSI escape codes.
+- `root_class`: The `class` attribute value for the root element.
+"""
+function HTMLPrinter end
 
 Base.showable(::MIME"text/html", printer::HTMLPrinter) = isreadable(printer.buf)
 
