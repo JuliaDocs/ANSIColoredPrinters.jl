@@ -11,7 +11,7 @@ end
     printer = HTMLPrinter(buf)
 
     print(buf, "This is a plain text.")
-    @test repr_html(printer) == "<pre>\nThis is a plain text.</pre>"
+    @test repr_html(printer) == "<pre>This is a plain text.</pre>"
 end
 
 @testset "escape" begin
@@ -20,7 +20,7 @@ end
 
     print(buf, "\"HTMLWriter\" uses '<pre>' & '<span>' elements.")
     result = repr_html(printer)
-    @test result == "<pre>\n&quot;HTMLWriter&quot; uses &#39;&lt;pre&gt;&#39; &amp; " *
+    @test result == "<pre>&quot;HTMLWriter&quot; uses &#39;&lt;pre&gt;&#39; &amp; " *
                     "&#39;&lt;span&gt;&#39; elements.</pre>"
 end
 
@@ -34,7 +34,7 @@ end
         print(buf, "\e[2m", " Faint ")
         print(buf, "\e[22m", " Normal ")
         result = repr_html(printer)
-        @test result == "<pre>\n" * """ Normal <span class="sgr1"> Bold </span>""" *
+        @test result == """<pre> Normal <span class="sgr1"> Bold </span>""" *
                         """<span class="sgr2"> Faint </span> Normal </pre>"""
     end
 
@@ -44,7 +44,7 @@ end
         print(buf, "\e[39;44m", " BlueBG ")
         print(buf, "\e[49m", " Normal ")
         result = repr_html(printer)
-        @test result == "<pre>\n" * """ Normal <span class="sgr36"> CyanFG </span>""" *
+        @test result == """<pre> Normal <span class="sgr36"> CyanFG </span>""" *
                         """<span class="sgr44"> BlueBG </span> Normal </pre>"""
     end
 
@@ -54,7 +54,7 @@ end
         print(buf, "\e[6m", " RapidBlink ")
         print(buf, "\e[25m", " Normal ")
         result = repr_html(printer)
-        @test result == "<pre>\n" * """ Normal <span class="sgr5"> Blink </span>""" *
+        @test result == """<pre> Normal <span class="sgr5"> Blink </span>""" *
                         """<span class="sgr6"> RapidBlink </span> Normal </pre>"""
     end
 end
@@ -70,7 +70,7 @@ end
         print(buf, "\e[23m", " Bold ")
         print(buf, "\e[0m", " Normal ")
         result = repr_html(printer)
-        @test result == "<pre>\n" * """ Normal <span class="sgr1"> Bold """ *
+        @test result == """<pre> Normal <span class="sgr1"> Bold """ *
                         """<span class="sgr3"> Bold-Italic </span>""" *
                         """ Bold </span> Normal </pre>"""
 
@@ -79,7 +79,7 @@ end
         print(buf, "\e[22m", " Italic ")
         print(buf, "\e[0m", " Normal ")
         result = repr_html(printer)
-        @test result == """<pre>\n<span class="sgr3"> Italic """ *
+        @test result == """<pre><span class="sgr3"> Italic """ *
                         """<span class="sgr1"> Bold-Italic </span>""" *
                         """ Italic </span> Normal </pre>"""
     end
@@ -91,7 +91,7 @@ end
         print(buf, "\e[39m", " Bold ")
         print(buf, "\e[0m", " Normal ")
         result = repr_html(printer)
-        @test result == "<pre>\n" * """ Normal <span class="sgr1"> Bold """ *
+        @test result == """<pre> Normal <span class="sgr1"> Bold """ *
                         """<span class="sgr36"> Bold-CyanFG </span>""" *
                         """ Bold </span> Normal </pre>"""
     end
@@ -103,7 +103,7 @@ end
         print(buf, "\e[25m", " Strike ")
         print(buf, "\e[29m", " Normal ")
         result = repr_html(printer)
-        @test result == "<pre>\n" * """ Normal <span class="sgr9"> Strike """ *
+        @test result == """<pre> Normal <span class="sgr9"> Strike """ *
                         """<span class="sgr5"> Strike-Blink </span>""" *
                         """ Strike </span> Normal </pre>"""
     end
@@ -115,7 +115,7 @@ end
         print(buf, "\e[49m", " LightCyanFG ")
         print(buf, "\e[39m", " Normal ")
         result = repr_html(printer)
-        @test result == "<pre>\n" * """ Normal <span class="sgr96"> LightCyanFG """ *
+        @test result == """<pre> Normal <span class="sgr96"> LightCyanFG """ *
                         """<span class="sgr45"> LightCyanFG-MagentaBG </span>""" *
                         """ LightCyanFG </span> Normal </pre>"""
     end
@@ -132,7 +132,7 @@ end
         print(buf, "\e[22;36m", " CyanFG ")
         print(buf, "\e[39m", " Normal ")
         result = repr_html(printer)
-        @test result == "<pre>\n" * """ Normal <span class="sgr1"> Bold """ *
+        @test result == """<pre> Normal <span class="sgr1"> Bold """ *
                         """<span class="sgr36"> Bold-CyanFG </span></span>""" *
                         """<span class="sgr36"> CyanFG </span> Normal </pre>"""
     end
@@ -144,7 +144,7 @@ end
         print(buf, "\e[39m", " MagentaBG ")
         print(buf, "\e[49m", " Normal ")
         result = repr_html(printer)
-        @test result == "<pre>\n" * """ Normal <span class="sgr96"> LightCyanFG """ *
+        @test result == """<pre> Normal <span class="sgr96"> LightCyanFG """ *
                         """<span class="sgr45"> LightCyanFG-MagentaBG </span></span>""" *
                         """<span class="sgr45"> MagentaBG </span> Normal </pre>"""
     end
@@ -157,7 +157,7 @@ end
     print(buf, "\e[7m", " Invert ")
     print(buf, "\e[8m", " Conceal ")
     result = repr_html(printer)
-    @test result == """<pre>\n<span class="sgr7"> Invert <span class="sgr8"> Conceal """ *
+    @test result == """<pre><span class="sgr7"> Invert <span class="sgr8"> Conceal """ *
                     """</span></span></pre>"""
 end
 
@@ -171,7 +171,7 @@ end
     print(buf, "\e[48;5;255m", " #eee(BG) ")
 
     result = repr_html(printer)
-    @test result == """<pre>\n<span class="sgr34"> Blue(FG) """ *
+    @test result == """<pre><span class="sgr34"> Blue(FG) """ *
                     """<span class="sgr48_5" style="background:#000"> #000(BG) """ *
                     """</span></span><span class="sgr48_5" style="background:#000">""" *
                     """<span class="sgr38_5" style="color:#87afd7"> #87afd7(FG) """ *
@@ -189,9 +189,72 @@ end
     print(buf, "\e[38;2;170;187;204m", " #abc(FG) ")
 
     result = repr_html(printer)
-    @test result == """<pre>\n<span class="sgr38_2" style="color:#0080ff"> #0080ff(FG) """ *
+    @test result == """<pre><span class="sgr38_2" style="color:#0080ff"> #0080ff(FG) """ *
                     """<span class="sgr48_5" style="background:#eee"> #eee(BG) """ *
                     """</span></span><span class="sgr48_5" style="background:#eee">""" *
                     """<span class="sgr38_2" style="color:#abc"> #abc(FG) """ *
                     """</span></span></pre>"""
+end
+
+@testset "callback" begin
+    @testset "use default" begin
+        counter = 0
+        function cb(io, printer, tag, attrs)
+            startswith(tag, "/") && return nothing
+            push!(attrs, :id => tag * string(counter))
+            counter += 1
+            return nothing
+        end
+
+        buf = IOBuffer()
+        printer = HTMLPrinter(buf, root_class = "root test", root_tag = "code", callback = cb)
+
+        print(buf, "\e[0m", " Normal ")
+        print(buf, "\e[38;5;255m", " #eee(FG) ")
+        print(buf, "\e[0m", " Normal ")
+
+        result = repr_html(printer)
+        @test result == """<code class="root test" id="code0"> Normal """ *
+                        """<span class="sgr38_5" id="span1" style="color:#eee">""" *
+                        """ #eee(FG) </span> Normal </code>"""
+    end
+
+    @testset "prevent default" begin
+        dom = Tuple[(:rootnode, Tuple[])]
+        function cb(io, printer, tag, attrs)
+            text = String(take!(io))
+            parent = dom[end]
+            children = parent[end]
+            isempty(text) || push!(children, (:textnode, text))
+
+            if startswith(tag, "/")
+                pop!(dom)
+            else
+                parent = (Symbol(tag), attrs, Tuple[])
+                push!(children, parent)
+                push!(dom, parent)
+            end
+            return true
+        end
+
+        buf = IOBuffer()
+        printer = HTMLPrinter(buf, callback = cb)
+
+        print(buf, "\e[0m", " Normal ")
+        print(buf, "\e[38;5;255m", " #eee(FG) ")
+        print(buf, "\e[0m", " Normal ")
+
+        result = repr_html(printer)
+        @test result == ""
+        @test dom[1] ==
+                (:rootnode, Tuple[
+                    (:pre, Dict{Symbol,String}(), Tuple[
+                        (:textnode, " Normal "),
+                        (:span, Dict(:class => "sgr38_5", :style => "color:#eee"), Tuple[
+                            (:textnode, " #eee(FG) ")
+                        ]),
+                        (:textnode, " Normal ")
+                    ])
+                ])
+    end
 end
