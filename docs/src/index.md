@@ -42,7 +42,7 @@ actually outputs HTML code that looks like:
 ```@example ex
 htmlsrc = IOBuffer() # hide
 show(htmlsrc, MIME"text/html"(), printer) # hide
-print(String(take!(htmlsrc))[1:120], "...") # hide
+print(String(take!(htmlsrc))[1:119], "...") # hide
 ```
 
 In addition, the colors and text styles are controlled by the CSS in the host

@@ -35,3 +35,28 @@ repr("text/plain", printer, context = :color => true) # optimized
 fragment (`MIME"text/html"`).
 
 See [Supported Codes](@ref) for examples.
+
+The [`HTMLPrinter`](@ref) constructor supports the `callback` keyword argument.
+The `callback` method will be called just before writing HTML tags. You can
+rewrite the attributes in your `callback` methods. You can also prevent the
+default tag writing by setting the return value of the `callback` method to
+something other than `nothing`.
+
+```@example ex
+src = IOBuffer();
+print(src, " Normal ", "\e[48;5;246m", " GrayBG ", "\e[0m", " Normal ");
+
+HTMLPrinter(src) # without callback method
+```
+
+```@repl ex
+function cb(io::IO, printer::HTMLPrinter, tag::String, attrs::Dict{Symbol, String})
+    text = String(take!(io))
+    @show text
+    @show tag, attrs
+    return true # prevent default writing
+end;
+
+dummy = IOBuffer();
+show(dummy, MIME"text/html"(), HTMLPrinter(src, callback = cb));
+```
