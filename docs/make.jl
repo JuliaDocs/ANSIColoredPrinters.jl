@@ -16,7 +16,7 @@ makedocs(
 )
 
 deploydocs(
-    repo="github.com/kimikage/ANSIColoredPrinters.jl.git",
+    repo="github.com/JuliaDocs/ANSIColoredPrinters.jl.git",
     devbranch = "main",
     push_preview = true
 )
