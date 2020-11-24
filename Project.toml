@@ -1,6 +1,6 @@
 name = "ANSIColoredPrinters"
 uuid = "a4c015fc-c6ff-483c-b24f-f7ea428134e9"
-version = "0.1.0"
+version = "0.0.1"
 
 [compat]
 julia = "1"
