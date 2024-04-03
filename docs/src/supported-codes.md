@@ -39,19 +39,21 @@ print(buf, "\e[4;9m", " Both ", "\e[m")
 HTMLPrinter(buf, root_class="documenter-example-output")
 ```
 ## Invert
-The invert code swaps the foreground and background colors. However, the support
-is limited. You will need to force the foreground and background colors to be
-switched manually, or convert the style afterwards using JavaScript etc.
+The invert code swaps the foreground and background colors. The default setting
+of `HTMLPrinter` (`keep_invert=false`) reinterprets background color changes as
+foreground color changes, and vice versa, when "invert" is enabled. In this
+case, the normal inverted foreground color is marked up as `class="sgr-39"` and
+the normal inverted background color is marked up as `class="sgr-49"`.
 
 ```@example ex
 buf = IOBuffer()
 print(buf, "\e[0m", "Normal ")
 print(buf, "\e[7m", "Invert ")
 print(buf, "\e[27m", "Normal ")
-print(buf, "\e[7;100m", "GrayText? ") # not supported by default.css
-print(buf, "\e[34m", "BlueBG? ") # not supported by default.css
+print(buf, "\e[7;103m", "YellowText ")
+print(buf, "\e[34m", "BlueBG ")
 print(buf, "\e[0m", "Normal ")
-HTMLPrinter(buf, root_class="documenter-example-output")
+HTMLPrinter(buf, keep_invert=false, root_class="documenter-example-output")
 ```
 
 ## Conceal

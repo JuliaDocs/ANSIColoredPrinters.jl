@@ -150,6 +150,39 @@ end
     end
 end
 
+@testset "invert" begin
+    buf = IOBuffer()
+
+    @testset "keep_invert=$keep" for keep in (true, false)
+        print(buf, "\e[0m", " Normal ")
+        print(buf, "\e[7m", " Invert ")
+        print(buf, "\e[45m", " MagentaFG-InvBG ")
+        print(buf, "\e[96m", " MagentaFG-LightCyanBG ")
+        print(buf, "\e[49m", " InvFG-LightCyanBG ")
+        print(buf, "\e[27m", " LightCyanFG ")
+        print(buf, "\e[39m", " Normal ")
+        printer = HTMLPrinter(buf, keep_invert=keep)
+        result = repr_html(printer)
+        if keep
+            @test result == """<pre> Normal """ *
+                            """<span class="sgr7"> Invert """ *
+                            """<span class="sgr45"> MagentaFG-InvBG """ *
+                            """<span class="sgr96"> MagentaFG-LightCyanBG </span>""" *
+                            """</span><span class="sgr96"> InvFG-LightCyanBG </span>""" *
+                            """</span><span class="sgr96"> LightCyanFG </span> Normal </pre>"""
+        else
+            @test result == """<pre> Normal """ *
+                            """<span class="sgr-49"><span class="sgr-39"> Invert """ *
+                            """</span><span class="sgr35"> MagentaFG-InvBG </span>""" *
+                            """</span><span class="sgr35">""" *
+                            """<span class="sgr106"> MagentaFG-LightCyanBG </span>""" *
+                            """</span><span class="sgr106">""" *
+                            """<span class="sgr-39"> InvFG-LightCyanBG </span></span>""" *
+                            """<span class="sgr96"> LightCyanFG </span> Normal </pre>"""
+        end
+    end
+end
+
 @testset "force reset" begin
     buf = IOBuffer()
     printer = HTMLPrinter(buf)
@@ -157,8 +190,8 @@ end
     print(buf, "\e[7m", " Invert ")
     print(buf, "\e[8m", " Conceal ")
     result = repr_html(printer)
-    @test result == """<pre><span class="sgr7"> Invert <span class="sgr8"> Conceal """ *
-                    """</span></span></pre>"""
+    @test result == """<pre><span class="sgr-49"><span class="sgr-39"> Invert """ *
+                    """<span class="sgr8"> Conceal </span></span></span></pre>"""
 end
 
 @testset "256 colors" begin

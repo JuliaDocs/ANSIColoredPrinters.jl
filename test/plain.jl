@@ -125,6 +125,33 @@ end
     end
 end
 
+@testset "invert" begin
+    buf = IOBuffer()
+
+    @testset "keep_invert=$keep" for keep in (true, false)
+        print(buf, "\e[0m", " Normal ")
+        print(buf, "\e[7m", " Invert ")
+        print(buf, "\e[45m", " MagentaFG-InvBG ")
+        print(buf, "\e[96m", " MagentaFG-LightCyanBG ")
+        print(buf, "\e[49m", " InvFG-LightCyanBG ")
+        print(buf, "\e[27m", " LightCyanFG ")
+        print(buf, "\e[39m", " Normal ")
+        printer = PlainTextPrinter(buf, keep_invert=keep)
+        result = repr_color(printer)
+        if keep
+            @test result == " Normal \e[7m Invert \e[45m MagentaFG-InvBG " *
+                            "\e[96m MagentaFG-LightCyanBG " *
+                            "\e[49m InvFG-LightCyanBG " *
+                            "\e[27m LightCyanFG \e[m Normal "
+        else
+            @test result == " Normal \e[30;47m Invert \e[35m MagentaFG-InvBG " *
+                            "\e[106m MagentaFG-LightCyanBG " *
+                            "\e[30m InvFG-LightCyanBG " *
+                            "\e[96;49m LightCyanFG \e[m Normal "
+        end
+    end
+end
+
 @testset "force reset" begin
     buf = IOBuffer()
     printer = PlainTextPrinter(buf)

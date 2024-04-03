@@ -4,28 +4,39 @@ struct HTMLPrinter <: StackModelPrinter
     stack::Vector{String}
     prevctx::SGRContext
     ctx::SGRContext
+    keep_invert::Bool
     root_class::String
     root_tag::String
     callback::Any
     function HTMLPrinter(buf::IO;
+                         keep_invert::Bool = false,
                          root_class::AbstractString = "",
                          root_tag::AbstractString = "pre",
                          callback::Any = nothing)
         new(buf, String[], SGRContext(), SGRContext(),
-            String(root_class), String(root_tag), callback)
+            keep_invert, String(root_class), String(root_tag), callback)
     end
 end
 
 """
-    HTMLPrinter(buf::IO; root_class="", root_tag="pre", callback=nothing)
+    HTMLPrinter(buf::IO; keep_invert=false, root_class="", root_tag="pre", callback=nothing)
 
 Creates a printer for `MIME"text/html"` output.
 
 # Arguments
 - `buf`: A source `IO` object containing a text with ANSI escape codes.
+- `keep_invert`: If `true`, "invert" (SGR code 7) is marked up as
+  `class="sgr7"`.
 - `root_class`: The `class` attribute value for the root element.
 - `root_tag`: The tag name for the root element.
 - `callback`: A callback method (see below).
+
+If `keep_invert` is `false` (default), the color change codes with "invert"
+enable are reinterpreted as explicit foreground and background color
+specifications.
+In this case, the normal inverted foreground color is marked up as
+`class="sgr-39"` and the normal inverted background color is marked up as
+`class="sgr-49"`.
 
 # Callback method
 
@@ -64,11 +75,11 @@ function Base.show(io::IO, ::MIME"text/html", printer::HTMLPrinter)
     attrs = Dict{Symbol, String}()
     isempty(printer.root_class) || push!(attrs, :class => printer.root_class)
 
-    write_htmltag(io, printer, printer.root_tag, attrs)
+    write_htmltag(io, printer, tag, attrs)
 
     show_body(io, printer)
 
-    write_htmltag(io, printer, "/" * printer.root_tag)
+    write_htmltag(io, printer, "/" * tag)
 end
 
 function start_new_state(io::IO, printer::HTMLPrinter)
