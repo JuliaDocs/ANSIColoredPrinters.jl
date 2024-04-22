@@ -42,6 +42,11 @@ include("html.jl")
 
 isnormal(ctx::SGRContext) = isnormal(ctx.fg) && isnormal(ctx.bg) && !any(ctx.flags)
 
+formal_fg(ctx::SGRContext) = ctx.fg
+formal_bg(ctx::SGRContext) = ctx.bg
+actual_fg(ctx::SGRContext) = ctx.flags[7] ? flip_fg_and_bg(ctx.bg) : ctx.fg
+actual_bg(ctx::SGRContext) = ctx.flags[7] ? flip_fg_and_bg(ctx.fg) : ctx.bg
+
 function reset_color(ctx::SGRContext)
     ctx.fg = SGRColor()
     ctx.bg = SGRColor()
@@ -159,21 +164,38 @@ function apply_changes(io::IO, printer::StackModelPrinter)
     marks = zeros(Bool, length(stack))
     nstack = String[]
 
-    for di = 1:9
+    for di in 1:9
         if prevctx.flags[di] != ctx.flags[di]
+            di == 7 && !printer.keep_invert && continue
             class = string(di)
             marks .|= map(c -> c == class, stack)
             ctx.flags[di] && push!(nstack, class)
         end
     end
-    if prevctx.fg != ctx.fg || invert
-        marks .|= map(c -> occursin(r"^(?:3[0-7]|9[0-7]|38_[25])$", c), stack)
-        isnormal(ctx.fg) || push!(nstack, ctx.fg.class)
+    if printer.keep_invert
+        prevfg, fg = formal_fg(prevctx), formal_fg(ctx)
+        prevbg, bg = formal_bg(prevctx), formal_bg(ctx)
+    else
+        prevfg, fg = actual_fg(prevctx), actual_fg(ctx)
+        prevbg, bg = actual_bg(prevctx), actual_bg(ctx)
     end
-    if prevctx.bg != ctx.bg || invert
-        marks .|= map(c -> occursin(r"^(?:4[0-7]|10[0-7]|48_[25])$", c), stack)
-        isnormal(ctx.bg) || push!(nstack, ctx.bg.class)
+    if prevfg != fg || (printer.keep_invert && invert)
+        marks .|= map(c -> occursin(r"^(?:3[0-7]|9[0-7]|38_[25]|-39)$", c), stack)
+        if fg.class == "-1"
+            push!(nstack, "-39")
+        elseif !isnormal(fg)
+            push!(nstack, fg.class)
+        end
     end
+    if prevbg != bg || (printer.keep_invert && invert)
+        marks .|= map(c -> occursin(r"^(?:4[0-7]|10[0-7]|48_[25]|-49)$", c), stack)
+        if bg.class == "-1"
+            push!(nstack, "-49")
+        elseif !isnormal(bg)
+            push!(nstack, bg.class)
+        end
+    end
+
     poplevel = findfirst(marks)
     if poplevel !== nothing
         while length(stack) >= poplevel
@@ -215,12 +237,22 @@ function apply_changes(io::IO, printer::FlatModelPrinter)
             parse_sgrcodes(prevctx, "25")
         end
     end
-    prevctx.fg != ctx.fg && append!(ansicodes, isnormal(ctx.fg) ? (39,) : codes(ctx.fg))
-    prevctx.bg != ctx.bg && append!(ansicodes, isnormal(ctx.bg) ? (49,) : codes(ctx.bg))
-    for i in 1:length(flags)
+    if printer.keep_invert
+        prevfg, fg = formal_fg(prevctx), formal_fg(ctx)
+        prevbg, bg = formal_bg(prevctx), formal_bg(ctx)
+    else
+        prevfg, fg = actual_fg(prevctx), actual_fg(ctx)
+        prevbg, bg = actual_bg(prevctx), actual_bg(ctx)
+    end
+    prevfg != fg && append!(ansicodes, codes(fg, true))
+    prevbg != bg && append!(ansicodes, codes(bg, false))
+
+    for i in eachindex(flags)
         prevflags[i] === flags[i] && continue
         if 1 <= i <= 2 || 5 <= i <= 6
             flags[i] && push!(ansicodes, i)
+        elseif i == 7
+            printer.keep_invert && push!(ansicodes, flags[7] ? 7 : 27)
         elseif i <= 9
             push!(ansicodes, flags[i] ? i : i + 20)
         end

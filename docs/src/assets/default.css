@@ -28,8 +28,28 @@ html span.sgr7 {
     background-color: #222;
 }
 
+html span.sgr-39 {
+    /* default inverted foreground color */
+    color: #fff;
+}
+
+html span.sgr-49 {
+    /* default inverted background color */
+    background-color: #222;
+}
+
 html.theme--documenter-dark span.sgr7 {
     color: #1f2424;
+    background-color: #fff;
+}
+
+html.theme--documenter-dark span.sgr-39 {
+    /* default inverted foreground color */
+    color: #1f2424;
+}
+
+html.theme--documenter-dark span.sgr-49 {
+    /* default inverted background color */
     background-color: #fff;
 }
 

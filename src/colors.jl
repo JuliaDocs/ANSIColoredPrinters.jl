@@ -7,6 +7,44 @@ function is216color(hex::AbstractString)
     hex == "000" || hex == "fff" || occursin(r"(?:00|5f|87|af|d7|ff){3}$", hex)
 end
 
+function flip_fg_and_bg(c::SGRColor)
+    # Note that the normal foreground color is not the normal background color.
+    # For convenience, we use the class "-1" for normal inverted color.
+    c.class == "" && return SGRColor("-1", c.hex)
+    c.class == "-1" && return SGRColor("", c.hex)
+
+    m = match(r"^([345]8)_([25])$", c.class)
+    if m === nothing
+        code = parse(Int, c.class)
+        if 30 <= code <= 39
+            class = string(code + 10)
+        elseif 40 <= code <= 49
+            class = string(code - 10)
+        elseif 90 <= code <= 97
+            class = string(code + 10)
+        elseif 100 <= code <= 107
+            class = string(code - 10)
+        end
+    else
+        if m[1] == "3"
+            class = "48_" * m[2]
+        elseif m[1] == "4"
+            class = "38_" * m[2]
+        end
+    end
+    return SGRColor(class, c.hex)
+end
+
+function codes(c::SGRColor, foreground::Bool)
+    if isnormal(c)
+        return foreground ? (39,) : (49,)
+    end
+    if c.class == "-1"
+        return foreground ? (-39,) : (-49,)
+    end
+    return codes(c)
+end
+
 function codes(c::SGRColor)
     m = match(r"^([345]8)_([25])$", c.class)
     m === nothing && return (parse(Int, c.class),)
