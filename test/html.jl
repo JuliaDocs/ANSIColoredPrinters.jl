@@ -57,6 +57,14 @@ end
         @test result == """<pre> Normal <span class="sgr5"> Blink </span>""" *
                         """<span class="sgr6"> RapidBlink </span> Normal </pre>"""
     end
+
+    @testset "leading zeros" begin
+        print(buf, "\e[0m", " Normal ")
+        print(buf, "\e[01m", " Bold ")
+        print(buf, "\e[39;49;00m", " Normal ")
+        result = repr_html(printer)
+        @test result == """<pre> Normal <span class="sgr1"> Bold </span> Normal </pre>"""
+    end
 end
 
 @testset "nested modification" begin
