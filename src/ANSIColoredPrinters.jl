@@ -117,7 +117,7 @@ function show_body(io::IO, printer::AbstractPrinter)
 end
 
 function parse_sgrcodes(ctx::SGRContext, astr::AbstractString)
-    if (m = match(r"^0?(?:;|$)", astr)) !== nothing
+    if (m = match(r"^0*(?:;|$)", astr)) !== nothing
         reset(ctx)
     elseif (m = match(r"^22;?", astr)) !== nothing
         reset_color(ctx)
@@ -138,7 +138,7 @@ function parse_sgrcodes(ctx::SGRContext, astr::AbstractString)
     elseif (m = match(r"^([345]8);2;(\d{0,3});(\d{0,3});(\d{0,3});?", astr)) !== nothing
         d, rs, gs, bs = m.captures
         d != "58" && set_24bitcolors!(ctx, d, rs, gs, bs) # code 58 is not yet supported
-    elseif (m = match(r"^(\d);?", astr)) !== nothing
+    elseif (m = match(r"^0*(\d);?", astr)) !== nothing
         di = parse(Int, m.captures[1])
         if di === 1 || di === 2
             ctx.flags[1:2] .= (di === 1, di === 2)
