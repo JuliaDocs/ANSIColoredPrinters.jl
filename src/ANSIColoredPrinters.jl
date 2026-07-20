@@ -117,6 +117,7 @@ function show_body(io::IO, printer::AbstractPrinter)
 end
 
 function parse_sgrcodes(ctx::SGRContext, astr::AbstractString)
+    astr = replace(astr, r"^0+(?=\d)" => "") # drop leading zeros in the first parameter
     if (m = match(r"^0?(?:;|$)", astr)) !== nothing
         reset(ctx)
     elseif (m = match(r"^22;?", astr)) !== nothing

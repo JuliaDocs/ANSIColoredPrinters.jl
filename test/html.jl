@@ -291,3 +291,14 @@ end
                 ])
     end
 end
+
+@testset "leading zeros" begin
+    buf = IOBuffer()
+    printer = HTMLPrinter(buf)
+
+    print(buf, "\e[00m", " Normal ")
+    print(buf, "\e[01m", " Bold ")
+    print(buf, "\e[39;49;00m", " Normal ")
+    result = repr_html(printer)
+    @test result == """<pre> Normal <span class="sgr1"> Bold </span> Normal </pre>"""
+end
